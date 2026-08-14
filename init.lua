@@ -421,10 +421,6 @@ do
   vim.pack.add { gh 'folke/todo-comments.nvim' }
   require('todo-comments').setup { signs = false }
 
-  -- [[ Comment.nvim ]]
-  vim.pack.add { gh 'numToStr/Comment.nvim' }
-  require('Comment').setup()
-
   -- [[ mini.nvim ]]
   --  A collection of various small independent plugins/modules
   vim.pack.add { gh 'nvim-mini/mini.nvim' }
@@ -450,6 +446,7 @@ do
     },
     n_lines = 500,
   }
+  require('mini.comment').setup()
 
   -- Add/delete/replace surroundings (brackets, quotes, etc.)
   --
