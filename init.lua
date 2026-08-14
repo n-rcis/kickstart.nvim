@@ -344,7 +344,29 @@ do
   -- We first install it from https://github.com/NMAC427/guess-indent.nvim
   -- and then call its `setup()` function to start it with default settings.
   vim.pack.add { gh 'NMAC427/guess-indent.nvim' }
-  require('guess-indent').setup {}
+  require('guess-indent').setup {
+    auto_cmd = true,  -- Set to false to disable automatic execution
+  override_editorconfig = false, -- Set to true to override settings set by .editorconfig
+  filetype_exclude = {  -- A list of filetypes for which the auto command gets disabled
+    "netrw",
+    "tutor",
+  },
+  buftype_exclude = {  -- A list of buffer types for which the auto command gets disabled
+    "help",
+    "nofile",
+    "terminal",
+    "prompt",
+  },
+  on_tab_options = { -- A table of vim options when tabs are detected 
+    ["expandtab"] = true,
+  },
+  on_space_options = { -- A table of vim options when spaces are detected 
+    ["expandtab"] = true,
+    ["tabstop"] = 4, -- If the option value is 'detected', The value is set to the automatically detected indent size.
+    ["softtabstop"] = 4,
+    ["shiftwidth"] = 4,
+  },
+  }
 
   -- Here is a more advanced configuration example that passes options to `gitsigns.nvim`
   --
