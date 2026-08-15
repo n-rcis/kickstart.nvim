@@ -1081,3 +1081,12 @@ do
     dapui.elements.watches.add(vim.fn.input('Watch expression: '))
   end, { desc = 'Debug: Add Watch' })
 end
+
+-- ============================================================
+-- SECTION: LAZYGIT
+-- ============================================================
+do
+  vim.pack.add { gh 'kdheepak/lazygit.nvim' }
+
+  vim.keymap.set('n', '<leader>gg', '<cmd>LazyGit<CR>', { desc = '[G]it: Open Lazy[G]it' })
+end
