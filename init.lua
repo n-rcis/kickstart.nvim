@@ -848,6 +848,18 @@ do
   vim.pack.add { { src = gh 'L3MON4D3/LuaSnip', version = vim.version.range '2.*' } }
   require('luasnip').setup {}
 
+  -- Clear stale snippet sessions so <Tab> doesn't jump to an old tabstop
+  -- elsewhere in the buffer instead of indenting normally.
+    vim.api.nvim_create_autocmd('ModeChanged', {
+      pattern = '*:n',
+      callback = function()
+        local luasnip = require 'luasnip'
+        if luasnip.session and luasnip.session.current_nodes[vim.api.nvim_get_current_buf()] and not luasnip.session.jump_active then
+          luasnip.unlink_current()
+        end
+      end,
+    })
+
   -- `friendly-snippets` contains a variety of premade snippets.
   --    See the README about individual language/framework/plugin snippets:
   --    https://github.com/rafamadriz/friendly-snippets
