@@ -1011,3 +1011,61 @@ end
 -- vim: ts=2 sts=2 sw=2 et
 --
 
+-- ============================================================
+-- SECTION: DEBUGGING (nvim-dap + lldb)
+-- ============================================================
+do
+  vim.pack.add {
+    gh 'mfussenegger/nvim-dap',
+    gh 'rcarriga/nvim-dap-ui',
+    gh 'nvim-neotest/nvim-nio', -- required by dap-ui
+  }
+
+  local dap = require 'dap'
+  local dapui = require 'dapui'
+
+  dapui.setup()
+
+  -- Auto open/close dap-ui with the debug session
+  dap.listeners.before.attach.dapui_config = function() dapui.open() end
+  dap.listeners.before.launch.dapui_config = function() dapui.open() end
+  dap.listeners.before.event_terminated.dapui_config = function() dapui.close() end
+  dap.listeners.before.event_exited.dapui_config = function() dapui.close() end
+
+  -- LLDB Adapter
+  dap.adapters.lldb = {
+    type = 'executable',
+    command = vim.fn.exepath 'lldb-dap',
+    name = 'lldb',
+  }
+
+  dap.configurations.cpp = {
+    {
+      name = 'Launch (lldb)',
+      type = 'lldb',
+      request = 'launch',
+      program = function()
+        return vim.fn.input('Path to executable: ', vim.fn.getcwd() .. '/', 'file')
+      end,
+      cwd = '${workspaceFolder}',
+      stopOnEntry = false,
+      args = {},
+    },
+  }
+  dap.configurations.c = dap.configurations.cpp
+
+  -- Keymaps
+  vim.keymap.set('n', '<F5>', dap.continue, { desc = 'Debug: Start/Continue' })
+  vim.keymap.set('n', '<F10>', dap.step_over, { desc = 'Debug: Step Over' })
+  vim.keymap.set('n', '<F11>', dap.step_into, { desc = 'Debug: Step Into' })
+  vim.keymap.set('n', '<F12>', dap.step_out, { desc = 'Debug: Step Out' })
+  vim.keymap.set('n', '<leader>b', dap.toggle_breakpoint, { desc = 'Debug: Toggle Breakpoint' })
+  vim.keymap.set('n', '<leader>B', function()
+    dap.set_breakpoint(vim.fn.input 'Breakpoint condition: ')
+  end, { desc = 'Debug: Conditional Breakpoint' })
+  vim.keymap.set('n', '<leader>du', dapui.toggle, { desc = 'Debug: Toggle UI' })
+  vim.keymap.set('n', '<leader>dr', dap.repl.open, { desc = 'Debug: Open REPL' })
+  vim.keymap.set('n', '<leader>dw', function()
+    dapui.elements.watches.add(vim.fn.input('Watch expression: '))
+  end, { desc = 'Debug: Add Watch' })
+end
