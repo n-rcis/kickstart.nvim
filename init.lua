@@ -1066,6 +1066,29 @@ do
   }
   dap.configurations.c = dap.configurations.cpp
 
+    -- Python debugging via debugpy
+  dap.adapters.python = {
+    type = 'executable',
+    command = vim.fn.exepath 'python3',
+    args = { '-m', 'debugpy.adapter' },
+  }
+
+  dap.configurations.python = {
+    {
+      type = 'python',
+      request = 'launch',
+      name = 'Launch file',
+      program = '${file}',
+      pythonPath = function()
+        local venv = os.getenv 'VIRTUAL_ENV'
+        if venv then
+          return venv .. '/bin/python'
+        end
+        return vim.fn.exepath 'python3'
+      end,
+    },
+  }
+
   -- Keymaps
   vim.keymap.set('n', '<F5>', dap.continue, { desc = 'Debug: Start/Continue' })
   vim.keymap.set('n', '<F10>', dap.step_over, { desc = 'Debug: Step Over' })
