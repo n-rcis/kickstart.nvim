@@ -364,6 +364,9 @@ do
   },
   on_tab_options = { -- A table of vim options when tabs are detected 
     ["expandtab"] = true,
+    ["tabstop"] = 4,
+    ["softtabstop"] = 4,
+    ["shiftwidth"] = 4,
   },
   on_space_options = { -- A table of vim options when spaces are detected 
     ["expandtab"] = true,
