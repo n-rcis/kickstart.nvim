@@ -239,6 +239,8 @@ do
   vim.keymap.set('n', '<C-j>', '<C-w><C-j>', { desc = 'Move focus to the lower window' })
   vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper window' })
 
+  vim.keymap.set('n', '<leader>l', '<cmd>lua vim.pack.update()<CR>', { desc = 'Update plugins'} )
+
   -- NOTE: Some terminals have colliding keymaps or are not able to send distinct keycodes
   -- vim.keymap.set("n", "<C-S-h>", "<C-w>H", { desc = "Move window to the left" })
   -- vim.keymap.set("n", "<C-S-l>", "<C-w>L", { desc = "Move window to the right" })
@@ -759,6 +761,10 @@ do
       if client and client:supports_method('textDocument/inlayHint', event.buf) then
         map('<leader>th', function() vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled { bufnr = event.buf }) end, '[T]oggle Inlay [H]ints')
       end
+
+      if client and client.name == 'clangd' then
+        map('<leader>ko', '<cmd>ClangdSwitchSourceHeader<CR>', 'Switch Header/Source')
+      end
     end,
   })
 
@@ -818,6 +824,7 @@ do
     gh 'mason-org/mason.nvim',
     gh 'mason-org/mason-lspconfig.nvim',
     gh 'WhoIsSethDaniel/mason-tool-installer.nvim',
+    gh 'dchinmay2/clangd_extensions.nvim',
   }
 
   -- Automatically install LSPs and related tools to stdpath for Neovim
@@ -827,6 +834,8 @@ do
   require('mason-lspconfig').setup {
     automatic_enable = false, -- Change this to true if you want to automatically enable servers that are installed manually (e.g. via :Mason / :MasonInstall)
   }
+
+  require('clangd_extensions').setup {}
 
   -- Ensure the servers and tools above are installed
   --
@@ -1080,12 +1089,14 @@ do
     gh 'mfussenegger/nvim-dap',
     gh 'rcarriga/nvim-dap-ui',
     gh 'nvim-neotest/nvim-nio', -- required by dap-ui
+    gh 'theHamsta/nvim-dap-virtual-text'
   }
 
   local dap = require 'dap'
   local dapui = require 'dapui'
 
   dapui.setup()
+  require('nvim-dap-virtual-text').setup {}
 
   -- Auto open/close dap-ui with the debug session
   dap.listeners.before.attach.dapui_config = function() dapui.open() end
