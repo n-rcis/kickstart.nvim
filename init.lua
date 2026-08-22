@@ -847,6 +847,7 @@ do
   local ensure_installed = vim.tbl_keys(servers or {})
   vim.list_extend(ensure_installed, {
     -- You can add other tools here that you want Mason to install
+    'codelldb',
   })
 
   require('mason-tool-installer').setup { ensure_installed = ensure_installed }
@@ -855,6 +856,53 @@ do
     vim.lsp.config(name, server)
     vim.lsp.enable(name)
   end
+end
+
+-- ============================================================
+-- SECTION: RUST (rustaceanvim)
+-- ============================================================
+do
+  vim.g.rustaceanvim = {
+    tools = {
+      -- rustaceanvim's floating window hover, code actions, etc.
+    },
+    server = {
+      on_attach = function(client, bufnr)
+        local map = function(keys, func, desc, mode)
+          mode = mode or 'n'
+          vim.keymap.set(mode, keys, func, { buffer = bufnr, desc = 'LSP: ' .. desc })
+        end
+        map('K', function() vim.cmd.RustLsp { 'hover', 'actions' } end, 'Hover Actions (Rust)')
+        map('grc', function() vim.cmd.RustLsp 'codeAction' end, '[G]oto Code Action (Rust)')
+        map('<leader>rr', function() vim.cmd.RustLsp 'runnables' end, '[R]ust [R]unnables')
+        map('<leader>rd', function() vim.cmd.RustLsp 'debuggables' end, '[R]ust [D]ebuggables')
+        map('<leader>re', function() vim.cmd.RustLsp 'expandMacro' end, '[R]ust [E]xpand Macro')
+      end,
+      default_settings = {
+        ['rust-analyzer'] = {
+          check = { command = 'clippy' },
+          cargo = { allFeatures = true },
+        },
+      },
+    },
+    dap = {
+      adapter = function()
+        local mason_registry_ok, mason_registry = pcall(require, 'mason-registry')
+        if not mason_registry_ok then return nil end
+        local codelldb_ok, codelldb = pcall(mason_registry.get_package, 'codelldb')
+        if not codelldb_ok then return nil end
+
+        local extension_path = codelldb:get_install_path() .. '/extension/'
+        local codelldb_path = extension_path .. 'adapter/codelldb'
+        local liblldb_path = extension_path .. 'lldb/lib/liblldb'
+        liblldb_path = liblldb_path .. (vim.fn.has 'mac' == 1 and '.dylib' or vim.fn.has 'win32' == 1 and '.dll' or '.so')
+
+        return require('rustaceanvim.config').get_codelldb_adapter(codelldb_path, liblldb_path)
+      end,
+    },
+  }
+
+  vim.pack.add { gh 'mrcjkb/rustaceanvim' }
 end
 
 -- ============================================================
@@ -874,6 +922,10 @@ do
         c = true,
         cpp = true,
       }
+      if vim.bo[bufnr].filetype == 'rust' then
+        -- Rust formatting is handled by rust-analyzer (which shells out to rustfmt itself)
+        return { timeout_ms = 500, lsp_format = 'only' }
+      end
       if enabled_filetypes[vim.bo[bufnr].filetype] then
         return { timeout_ms = 500, lsp_format = 'never'}
       end
@@ -1006,7 +1058,7 @@ do
   vim.pack.add { { src = gh 'nvim-treesitter/nvim-treesitter', version = 'main' } }
 
   -- Ensure basic parsers are installed
-  local parsers = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc' }
+  local parsers = { 'bash', 'c', 'cpp', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'rust', 'vim', 'vimdoc' }
   require('nvim-treesitter').install(parsers)
 
   ---@param buf integer
