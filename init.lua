@@ -867,6 +867,7 @@ do
       -- rustaceanvim's floating window hover, code actions, etc.
     },
     server = {
+      cmd = { vim.fn.stdpath('data') .. '/mason/bin/rust-analyzer'},
       on_attach = function(client, bufnr)
         local map = function(keys, func, desc, mode)
           mode = mode or 'n'
